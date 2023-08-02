@@ -25,9 +25,9 @@ import (
 	"k8s.io/client-go/tools/record"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1"
-	"github.com/open-telemetry/opentelemetry-operator/internal/config"
-	"github.com/open-telemetry/opentelemetry-operator/internal/manifests"
+	"github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/config"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/manifests"
 )
 
 var (

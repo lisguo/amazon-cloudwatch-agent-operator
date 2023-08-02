@@ -43,17 +43,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	otelv1alpha1 "github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1"
-	"github.com/open-telemetry/opentelemetry-operator/controllers"
-	"github.com/open-telemetry/opentelemetry-operator/internal/config"
-	"github.com/open-telemetry/opentelemetry-operator/internal/version"
-	"github.com/open-telemetry/opentelemetry-operator/internal/webhook/podmutation"
-	"github.com/open-telemetry/opentelemetry-operator/pkg/autodetect"
-	collectorupgrade "github.com/open-telemetry/opentelemetry-operator/pkg/collector/upgrade"
-	"github.com/open-telemetry/opentelemetry-operator/pkg/featuregate"
-	"github.com/open-telemetry/opentelemetry-operator/pkg/instrumentation"
-	instrumentationupgrade "github.com/open-telemetry/opentelemetry-operator/pkg/instrumentation/upgrade"
-	"github.com/open-telemetry/opentelemetry-operator/pkg/sidecar"
+	otelv1alpha1 "github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	"github.com/aws/amazon-cloudwatch-agent-operator/controllers"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/config"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/version"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/webhook/podmutation"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/autodetect"
+	collectorupgrade "github.com/aws/amazon-cloudwatch-agent-operator/pkg/collector/upgrade"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/featuregate"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/instrumentation"
+	instrumentationupgrade "github.com/aws/amazon-cloudwatch-agent-operator/pkg/instrumentation/upgrade"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/sidecar"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -113,15 +113,15 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	pflag.StringVar(&collectorImage, "collector-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:%s", v.OpenTelemetryCollector), "The default OpenTelemetry collector image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&targetAllocatorImage, "target-allocator-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/target-allocator:%s", v.TargetAllocator), "The default OpenTelemetry target allocator image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&operatorOpAMPBridgeImage, "operator-opamp-bridge-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/operator-opamp-bridge:%s", v.OperatorOpAMPBridge), "The default OpenTelemetry Operator OpAMP Bridge image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationJava, "auto-instrumentation-java-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:%s", v.AutoInstrumentationJava), "The default OpenTelemetry Java instrumentation image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationNodeJS, "auto-instrumentation-nodejs-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-nodejs:%s", v.AutoInstrumentationNodeJS), "The default OpenTelemetry NodeJS instrumentation image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationPython, "auto-instrumentation-python-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-python:%s", v.AutoInstrumentationPython), "The default OpenTelemetry Python instrumentation image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationDotNet, "auto-instrumentation-dotnet-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-dotnet:%s", v.AutoInstrumentationDotNet), "The default OpenTelemetry DotNet instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&targetAllocatorImage, "target-allocator-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/target-allocator:%s", v.TargetAllocator), "The default OpenTelemetry target allocator image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&operatorOpAMPBridgeImage, "operator-opamp-bridge-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/operator-opamp-bridge:%s", v.OperatorOpAMPBridge), "The default OpenTelemetry Operator OpAMP Bridge image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationJava, "auto-instrumentation-java-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-java:%s", v.AutoInstrumentationJava), "The default OpenTelemetry Java instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationNodeJS, "auto-instrumentation-nodejs-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-nodejs:%s", v.AutoInstrumentationNodeJS), "The default OpenTelemetry NodeJS instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationPython, "auto-instrumentation-python-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-python:%s", v.AutoInstrumentationPython), "The default OpenTelemetry Python instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationDotNet, "auto-instrumentation-dotnet-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-dotnet:%s", v.AutoInstrumentationDotNet), "The default OpenTelemetry DotNet instrumentation image. This image is used when no image is specified in the CustomResource.")
 	pflag.StringVar(&autoInstrumentationGo, "auto-instrumentation-go-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:%s", v.AutoInstrumentationGo), "The default OpenTelemetry Go instrumentation image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationApacheHttpd, "auto-instrumentation-apache-httpd-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-apache-httpd:%s", v.AutoInstrumentationApacheHttpd), "The default OpenTelemetry Apache HTTPD instrumentation image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationNginx, "auto-instrumentation-nginx-image", fmt.Sprintf("ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-apache-httpd:%s", v.AutoInstrumentationNginx), "The default OpenTelemetry Nginx instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationApacheHttpd, "auto-instrumentation-apache-httpd-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-apache-httpd:%s", v.AutoInstrumentationApacheHttpd), "The default OpenTelemetry Apache HTTPD instrumentation image. This image is used when no image is specified in the CustomResource.")
+	pflag.StringVar(&autoInstrumentationNginx, "auto-instrumentation-nginx-image", fmt.Sprintf("ghcr.io/aws/amazon-cloudwatch-agent-operator/autoinstrumentation-apache-httpd:%s", v.AutoInstrumentationNginx), "The default OpenTelemetry Nginx instrumentation image. This image is used when no image is specified in the CustomResource.")
 	pflag.StringArrayVar(&labelsFilter, "labels", []string{}, "Labels to filter away from propagating onto deploys")
 	pflag.IntVar(&webhookPort, "webhook-port", 9443, "The port the webhook endpoint binds to.")
 	pflag.StringVar(&tlsOpt.minVersion, "tls-min-version", "VersionTLS12", "Minimum TLS version supported. Value must match version names from https://golang.org/pkg/crypto/tls/#pkg-constants.")

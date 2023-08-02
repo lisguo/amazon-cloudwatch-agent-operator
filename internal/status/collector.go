@@ -23,10 +23,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1"
-	"github.com/open-telemetry/opentelemetry-operator/internal/manifests/collector"
-	"github.com/open-telemetry/opentelemetry-operator/internal/naming"
-	"github.com/open-telemetry/opentelemetry-operator/internal/version"
+	"github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/manifests/collector"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/naming"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/version"
 )
 
 func UpdateCollectorStatus(ctx context.Context, cli client.Client, changed *v1alpha1.OpenTelemetryCollector) error {

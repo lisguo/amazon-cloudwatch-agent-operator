@@ -22,9 +22,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/open-telemetry/opentelemetry-operator/internal/manifests"
-	"github.com/open-telemetry/opentelemetry-operator/internal/version"
-	collectorupgrade "github.com/open-telemetry/opentelemetry-operator/pkg/collector/upgrade"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/manifests"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/version"
+	collectorupgrade "github.com/aws/amazon-cloudwatch-agent-operator/pkg/collector/upgrade"
 )
 
 const (

@@ -1,4 +1,4 @@
-module github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge
+module github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge
 
 go 1.20
 
@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/open-telemetry/opamp-go v0.9.0
-	github.com/open-telemetry/opentelemetry-operator v0.85.0
+	github.com/aws/amazon-cloudwatch-agent-operator v0.85.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4

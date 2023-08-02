@@ -35,9 +35,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1"
-	"github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge/config"
-	"github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge/operator"
+	"github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge/config"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge/operator"
 )
 
 var (

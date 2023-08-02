@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/open-telemetry/opentelemetry-operator/cmd/otel-allocator/allocation"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/otel-allocator/allocation"
 )
 
 var logger = logf.Log.WithName("collector-unit-tests")

@@ -1,6 +1,8 @@
 # Build the manager binary
 FROM golang:1.21-alpine as builder
 
+# set goproxy=direct
+ENV GOPROXY direct
 WORKDIR /workspace
 
 RUN apk --no-cache add ca-certificates

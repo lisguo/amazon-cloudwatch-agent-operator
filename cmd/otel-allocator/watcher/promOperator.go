@@ -34,7 +34,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	allocatorconfig "github.com/open-telemetry/opentelemetry-operator/cmd/otel-allocator/config"
+	allocatorconfig "github.com/github.com/aws/amazon-cloudwatch-agent-operator/cmd/otel-allocator/config"
 )
 
 func NewPrometheusCRWatcher(logger logr.Logger, cfg allocatorconfig.Config) (*PrometheusCRWatcher, error) {

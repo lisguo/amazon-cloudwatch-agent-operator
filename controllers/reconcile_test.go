@@ -33,12 +33,12 @@ import (
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	k8sreconcile "sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/open-telemetry/opentelemetry-operator/apis/v1alpha1"
-	"github.com/open-telemetry/opentelemetry-operator/controllers"
-	"github.com/open-telemetry/opentelemetry-operator/internal/config"
-	"github.com/open-telemetry/opentelemetry-operator/internal/manifests"
-	ta "github.com/open-telemetry/opentelemetry-operator/internal/manifests/targetallocator/adapters"
-	"github.com/open-telemetry/opentelemetry-operator/internal/naming"
+	"github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	"github.com/aws/amazon-cloudwatch-agent-operator/controllers"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/config"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/manifests"
+	ta "github.com/aws/amazon-cloudwatch-agent-operator/internal/manifests/targetallocator/adapters"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/naming"
 )
 
 const (

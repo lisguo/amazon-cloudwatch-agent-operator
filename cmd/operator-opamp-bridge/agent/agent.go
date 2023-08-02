@@ -18,15 +18,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/oklog/ulid"
 	"time"
 
 	"github.com/go-logr/logr"
 	"gopkg.in/yaml.v3"
 
-	"github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge/metrics"
-	"github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge/operator"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge/metrics"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge/operator"
 
-	"github.com/open-telemetry/opentelemetry-operator/cmd/operator-opamp-bridge/config"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/operator-opamp-bridge/config"
 
 	"github.com/oklog/ulid/v2"
 	"go.uber.org/multierr"

@@ -22,8 +22,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/open-telemetry/opentelemetry-operator/cmd/otel-allocator/diff"
-	"github.com/open-telemetry/opentelemetry-operator/cmd/otel-allocator/target"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/otel-allocator/diff"
+	"github.com/aws/amazon-cloudwatch-agent-operator/cmd/otel-allocator/target"
 )
 
 var _ Allocator = &consistentHashingAllocator{}
