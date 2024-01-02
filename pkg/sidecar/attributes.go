@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/open-telemetry/opentelemetry-operator/pkg/constants"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/constants"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 	appsv1 "k8s.io/api/apps/v1"

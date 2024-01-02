@@ -3,36 +3,42 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"os"
-	"runtime"
-	"strings"
-
-	"github.com/open-telemetry/opentelemetry-operator/pkg/featuregate"
 	routev1 "github.com/openshift/api/route/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/spf13/pflag"
 	colfeaturegate "go.opentelemetry.io/collector/featuregate"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sruntime "k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/client-go/tools/record"
 	k8sapiflag "k8s.io/component-base/cli/flag"
+	"os"
+	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+	"strings"
 
-	cwv1alphav1 "github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
+	otelv1alpha1 "github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
 	"github.com/aws/amazon-cloudwatch-agent-operator/controllers"
 	"github.com/aws/amazon-cloudwatch-agent-operator/internal/config"
 	"github.com/aws/amazon-cloudwatch-agent-operator/internal/version"
-	"github.com/aws/amazon-cloudwatch-agent-operator/internal/webhookhandler"
+	"github.com/aws/amazon-cloudwatch-agent-operator/internal/webhook/podmutation"
+	collectorupgrade "github.com/aws/amazon-cloudwatch-agent-operator/pkg/collector/upgrade"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/featuregate"
 	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/instrumentation"
+	instrumentationupgrade "github.com/aws/amazon-cloudwatch-agent-operator/pkg/instrumentation/upgrade"
 	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/sidecar"
+	// +kubebuilder:scaffold:imports
 )
 
 const (
@@ -52,9 +58,20 @@ type tlsConfig struct {
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
-	utilruntime.Must(cwv1alphav1.AddToScheme(scheme))
+	utilruntime.Must(otelv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(routev1.AddToScheme(scheme))
+	utilruntime.Must(monitoringv1.AddToScheme(scheme))
+	// +kubebuilder:scaffold:scheme
+}
+
+// stringFlagOrEnv defines a string flag which can be set by an environment variable.
+// Precedence: flag > env var > default value.
+func stringFlagOrEnv(p *string, name string, envName string, defaultValue string, usage string) {
+	envValue := os.Getenv(envName)
+	if envValue != "" {
+		defaultValue = envValue
+	}
+	pflag.StringVar(p, name, defaultValue, usage)
 }
 
 func main() {
@@ -69,14 +86,15 @@ func main() {
 
 	// add flags related to this operator
 	var (
-		agentImage              string
+		collectorImage          string
 		autoInstrumentationJava string
 		webhookPort             int
 		tlsOpt                  tlsConfig
 	)
 
-	pflag.StringVar(&agentImage, "agent-image", fmt.Sprintf("%s:%s", cloudwatchAgentImageRepository, v.AmazonCloudWatchAgent), "The default cloudwatch agent image. This image is used when no image is specified in the CustomResource.")
-	pflag.StringVar(&autoInstrumentationJava, "auto-instrumentation-java-image", fmt.Sprintf("%s:%s", autoInstrumentationJavaImageRepository, v.AutoInstrumentationJava), "The default OpenTelemetry Java instrumentation image. This image is used when no image is specified in the CustomResource.")
+	stringFlagOrEnv(&collectorImage, "collector-image", "RELATED_IMAGE_COLLECTOR", fmt.Sprintf("%s:%s", cloudwatchAgentImageRepository, v.AmazonCloudWatchAgent), "The default cloudwatch agent image. This image is used when no image is specified in the CustomResource.")
+	stringFlagOrEnv(&autoInstrumentationJava, "auto-instrumentation-java-image", "RELATED_IMAGE_AUTO_INSTRUMENTATION_JAVA", fmt.Sprintf("%s:%s", autoInstrumentationJavaImageRepository, v.AutoInstrumentationJava), "The default OpenTelemetry Java instrumentation image. This image is used when no image is specified in the CustomResource.")
+
 	pflag.Parse()
 
 	logger := zap.New(zap.UseFlagOptions(&opts))
@@ -84,7 +102,7 @@ func main() {
 
 	logger.Info("Starting the Amazon CloudWatch Agent Operator",
 		"amazon-cloudwatch-agent-operator", v.Operator,
-		"amazon-cloudwatch-agent", agentImage,
+		"amazon-cloudwatch-agent", collectorImage,
 		"auto-instrumentation-java", autoInstrumentationJava,
 		"build-date", v.BuildDate,
 		"go-version", v.Go,
@@ -98,7 +116,7 @@ func main() {
 	cfg := config.New(
 		config.WithLogger(ctrl.Log.WithName("config")),
 		config.WithVersion(v),
-		config.WithCollectorImage(agentImage),
+		config.WithCollectorImage(collectorImage),
 		config.WithAutoInstrumentationJavaImage(autoInstrumentationJava),
 	)
 
@@ -112,11 +130,12 @@ func main() {
 	optionsTlSOptsFuncs := []func(*tls.Config){
 		func(config *tls.Config) { tlsConfigSetting(config, tlsOpt) },
 	}
-	var namespaces []string
+	var namespaces map[string]cache.Config
 	if strings.Contains(watchNamespace, ",") {
-		namespaces = strings.Split(watchNamespace, ",")
-	} else {
-		namespaces = []string{watchNamespace}
+		namespaces = map[string]cache.Config{}
+		for _, ns := range strings.Split(watchNamespace, ",") {
+			namespaces[ns] = cache.Config{}
+		}
 	}
 
 	mgrOptions := ctrl.Options{
@@ -126,7 +145,7 @@ func main() {
 			TLSOpts: optionsTlSOptsFuncs,
 		}),
 		Cache: cache.Options{
-			Namespaces: namespaces,
+			DefaultNamespaces: namespaces,
 		},
 	}
 
@@ -137,6 +156,12 @@ func main() {
 	}
 
 	ctx := ctrl.SetupSignalHandler()
+	err = addDependencies(ctx, mgr, cfg, v)
+	if err != nil {
+		setupLog.Error(err, "failed to add/run bootstrap dependencies to the controller manager")
+		os.Exit(1)
+	}
+
 	if err = controllers.NewReconciler(controllers.Params{
 		Client:   mgr.GetClient(),
 		Log:      ctrl.Log.WithName("controllers").WithName("AmazonCloudWatchAgent"),
@@ -149,33 +174,34 @@ func main() {
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		// Create webhook to create cloudwatch agent operator resources
-		if err = (&cwv1alphav1.AmazonCloudWatchAgent{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "AmazonCloudWatch")
+		if err = otelv1alpha1.SetupCollectorWebhook(mgr, cfg); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "AmazonCloudWatchAgent")
 			os.Exit(1)
 		}
-
-		// Create webhook to install instrumentation sdk to pods
-		if err = (&cwv1alphav1.Instrumentation{
-			ObjectMeta: metav1.ObjectMeta{
-				Annotations: map[string]string{
-					cwv1alphav1.AnnotationDefaultAutoInstrumentationJava: autoInstrumentationJava,
-				},
-			},
-		}).SetupWebhookWithManager(mgr); err != nil {
+		if err = otelv1alpha1.SetupInstrumentationWebhook(mgr, cfg); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Instrumentation")
 			os.Exit(1)
 		}
 		decoder := admission.NewDecoder(mgr.GetScheme())
 		mgr.GetWebhookServer().Register("/mutate-v1-pod", &webhook.Admission{
-			Handler: webhookhandler.NewWebhookHandler(cfg, ctrl.Log.WithName("pod-webhook"), decoder, mgr.GetClient(),
-				[]webhookhandler.PodMutator{
+			Handler: podmutation.NewWebhookHandler(cfg, ctrl.Log.WithName("pod-webhook"), decoder, mgr.GetClient(),
+				[]podmutation.PodMutator{
 					sidecar.NewMutator(logger, cfg, mgr.GetClient()),
-					instrumentation.NewMutator(logger, mgr.GetClient(), mgr.GetEventRecorderFor("opentelemetry-operator")),
+					instrumentation.NewMutator(logger, mgr.GetClient(), mgr.GetEventRecorderFor("amazon-cloudwatch-agent-operator")),
 				}),
 		})
 	} else {
 		ctrl.Log.Info("Webhooks are disabled, operator is running an unsupported mode", "ENABLE_WEBHOOKS", "false")
+	}
+	// +kubebuilder:scaffold:builder
+
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
 	}
 
 	setupLog.Info("starting manager")
@@ -183,6 +209,43 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func addDependencies(_ context.Context, mgr ctrl.Manager, cfg config.Config, v version.Version) error {
+	// adds the upgrade mechanism to be executed once the manager is ready
+	err := mgr.Add(manager.RunnableFunc(func(c context.Context) error {
+		up := &collectorupgrade.VersionUpgrade{
+			Log:      ctrl.Log.WithName("collector-upgrade"),
+			Version:  v,
+			Client:   mgr.GetClient(),
+			Recorder: record.NewFakeRecorder(collectorupgrade.RecordBufferSize),
+		}
+		return up.ManagedInstances(c)
+	}))
+	if err != nil {
+		return fmt.Errorf("failed to upgrade AmazonCloudWatchAgent instances: %w", err)
+	}
+
+	// adds the upgrade mechanism to be executed once the manager is ready
+	err = mgr.Add(manager.RunnableFunc(func(c context.Context) error {
+		u := &instrumentationupgrade.InstrumentationUpgrade{
+			Logger:                     ctrl.Log.WithName("instrumentation-upgrade"),
+			DefaultAutoInstJava:        cfg.AutoInstrumentationJavaImage(),
+			DefaultAutoInstNodeJS:      cfg.AutoInstrumentationNodeJSImage(),
+			DefaultAutoInstPython:      cfg.AutoInstrumentationPythonImage(),
+			DefaultAutoInstDotNet:      cfg.AutoInstrumentationDotNetImage(),
+			DefaultAutoInstGo:          cfg.AutoInstrumentationDotNetImage(),
+			DefaultAutoInstApacheHttpd: cfg.AutoInstrumentationApacheHttpdImage(),
+			DefaultAutoInstNginx:       cfg.AutoInstrumentationNginxImage(),
+			Client:                     mgr.GetClient(),
+			Recorder:                   mgr.GetEventRecorderFor("opentelemetry-operator"),
+		}
+		return u.ManagedInstances(c)
+	}))
+	if err != nil {
+		return fmt.Errorf("failed to upgrade Instrumentation instances: %w", err)
+	}
+	return nil
 }
 
 // This function get the option from command argument (tlsConfig), check the validity through k8sapiflag

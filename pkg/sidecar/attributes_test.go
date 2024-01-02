@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/open-telemetry/opentelemetry-operator/pkg/constants"
+	"github.com/aws/amazon-cloudwatch-agent-operator/pkg/constants"
 	"github.com/stretchr/testify/assert"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 	appv1 "k8s.io/api/apps/v1"

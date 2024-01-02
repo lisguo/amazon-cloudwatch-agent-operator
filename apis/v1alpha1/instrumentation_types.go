@@ -5,6 +5,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -80,6 +81,10 @@ type Java struct {
 	// Image is a container image with javaagent auto-instrumentation JAR.
 	// +optional
 	Image string `json:"image,omitempty"`
+
+	// VolumeSizeLimit defines size limit for volume used for auto-instrumentation.
+	// The default size is 200Mi.
+	VolumeSizeLimit *resource.Quantity `json:"volumeLimitSize,omitempty"`
 
 	// Env defines java specific env vars. There are four layers for env vars' definitions and
 	// the precedence order is: `original container env vars` > `language specific env vars` > `common env vars` > `instrument spec configs' vars`.

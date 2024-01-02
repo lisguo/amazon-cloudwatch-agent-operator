@@ -12,7 +12,7 @@ import (
 var (
 	version                 string
 	buildDate               string
-	agent                   string
+	otelCol                 string
 	autoInstrumentationJava string
 )
 
@@ -49,9 +49,9 @@ func (v Version) String() string {
 
 // AmazonCloudWatchAgent returns the default AmazonCloudWatchAgent to use when no versions are specified via CLI or configuration.
 func AmazonCloudWatchAgent() string {
-	if len(agent) > 0 {
+	if len(otelCol) > 0 {
 		// this should always be set, as it's specified during the build
-		return agent
+		return otelCol
 	}
 
 	// fallback value, useful for tests
