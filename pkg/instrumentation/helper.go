@@ -32,12 +32,7 @@ func isInitContainerMissing(pod corev1.Pod, containerName string) bool {
 func isAutoInstrumentationInjected(pod corev1.Pod) bool {
 	for _, cont := range pod.Spec.InitContainers {
 		if slices.Contains([]string{
-			dotnetInitContainerName,
 			javaInitContainerName,
-			nodejsInitContainerName,
-			pythonInitContainerName,
-			apacheAgentInitContainerName,
-			apacheAgentCloneContainerName,
 		}, cont.Name) {
 			return true
 		}
