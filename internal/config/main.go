@@ -20,7 +20,7 @@ const (
 	defaultCollectorConfigMapEntry           = "collector.yaml"
 	defaultTargetAllocatorConfigMapEntry     = "targetallocator.yaml"
 	defaultOperatorOpAMPBridgeConfigMapEntry = "remoteconfiguration.yaml"
-	defaultCloudWatchAgentConfigMapEntry 	 = "cwagentconfig.json"
+	defaultCloudWatchAgentConfigMapEntry     = "cwagentconfig.json"
 )
 
 // Config holds the static configuration for this operator.

@@ -1,7 +1,7 @@
 # Amazon CloudWatch Agent Operator
 The Amazon CloudWatch Agent Operator is software developed to manage the [CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Install-CloudWatch-Agent.html) on kubernetes.
 
-This repo is based off of the [OpenTelemetry Operator](https://github.com/aws/amazon-cloudwatch-agent-operator)
+This repo is based off of the [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator)
 
 ## Build and Deployment
 - Image can be built using `make container`

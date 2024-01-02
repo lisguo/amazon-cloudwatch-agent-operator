@@ -7,6 +7,10 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"os"
+	"runtime"
+	"strings"
+
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/spf13/pflag"
@@ -17,8 +21,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/tools/record"
 	k8sapiflag "k8s.io/component-base/cli/flag"
-	"os"
-	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -26,7 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"strings"
 
 	otelv1alpha1 "github.com/aws/amazon-cloudwatch-agent-operator/apis/v1alpha1"
 	"github.com/aws/amazon-cloudwatch-agent-operator/controllers"

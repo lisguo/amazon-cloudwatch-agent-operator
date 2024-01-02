@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package main
 
 import (
@@ -5,11 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"path/filepath"
 	"strings"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"k8s.io/client-go/kubernetes"
 )
