@@ -15,7 +15,7 @@ imagePullSecrets: [ ]
 clusterName:
 
 ## Provide the Region (this is a required parameter)
-region:
+region: us-west-2
 
 gpuNodeLabelKey: node.kubernetes.io/instance-type
 ## NVIDIA GPU instance types
@@ -39,10 +39,10 @@ containerLogs:
 manager:
   name:
   image:
-    repository: cloudwatch-agent-operator
-    tag: 1.1.0
+    repository: lisaguo-test-cwa-operator
+    tag: latest
     repositoryDomainMap:
-      public: public.ecr.aws/cloudwatch-agent
+      public: public.ecr.aws/m2t4f1b8
       cn-north-1: 934860584483.dkr.ecr.cn-north-1.amazonaws.com.cn
       cn-northwest-1: 934860584483.dkr.ecr.cn-northwest-1.amazonaws.com.cn
       us-gov-east-1: 743662458514.dkr.ecr.us-gov-east-1.amazonaws.com
@@ -181,7 +181,12 @@ agent:
           "kubernetes": {
             "enhanced_container_insights": true
           },
-          "app_signals": { }
+          "app_signals": {
+            "tls": {
+              "cert_file": "/etc/amazon-cloudwatch-observability-agent-cert/tls.crt",
+              "key_file": "/etc/amazon-cloudwatch-observability-agent-cert/tls.key"
+            },
+          }
         }
       },
       "traces": {
