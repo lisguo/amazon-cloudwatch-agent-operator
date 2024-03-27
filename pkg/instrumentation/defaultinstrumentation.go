@@ -24,7 +24,7 @@ const (
 	otelAppSignalsEnabledKey                   = "OTEL_AWS_APP_SIGNALS_ENABLED"
 	otelAppSignalsEnabledDefaultValue          = "true"
 	otelTracesSamplerArgKey                    = "OTEL_TRACES_SAMPLER_ARG"
-	otelTracesSamplerArgDefaultValue           = "endpoint=https://cloudwatch-agent.amazon-cloudwatch:2000"
+	otelTracesSamplerArgDefaultValue           = "endpoint=http://cloudwatch-agent.amazon-cloudwatch:2000"
 	otelTracesSamplerKey                       = "OTEL_TRACES_SAMPLER"
 	otelTracesSamplerDefaultValue              = "xray"
 	otelExporterOtlpProtocolKey                = "OTEL_EXPORTER_OTLP_PROTOCOL"
